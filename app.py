@@ -61,7 +61,7 @@ def calculate():
     data[:,0] = x[0:p]
     data[:,1] = y[0:p]
     data[:,2] = z[0:p]
-    return jsonify({'result': data})
+    return jsonify({'result': data.tolist()})
     #np.savetxt("orbital_{:d},{:d},{:d}_full.csv".format(n,l,m), data, delimiter=",")
     del rnd_x, rnd_y, rnd_z, rnd_M, x, y, z
     
