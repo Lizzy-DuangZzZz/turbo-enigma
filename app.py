@@ -15,6 +15,14 @@ def calculate():
         N_q = np.sqrt((2*l+1)*sp.factorial((l-np.abs(m)))/(4.0*np.pi*sp.factorial(l+np.abs(m))))
         Q = sp.lpmv(np.abs(m), l, np.cos(q))
         return np.power(N_r*R*np.abs(Q)*N_q, 2.0)
+
+    def psi_modulus(r, q, n, l, m):
+        N_r = np.sqrt(sp.factorial(n-l-1) * 4.0 / (np.power(n, 4.0) * np.power(sp.factorial(n+l), 1.0)))
+        r_scaled = 2.0 * r / n
+        R = np.exp(-r_scaled/2.0) * np.power(r_scaled, l) * sp.genlaguerre(n-l-1, 2*l+1)(r_scaled)
+        N_q = np.sqrt((2*l+1) * sp.factorial(l - np.abs(m)) / (4.0 * np.pi * sp.factorial(l+np.abs(m))))
+        Q = sp.lpmv(np.abs(m), l, np.cos(q))
+        return np.abs(N_r * R * np.abs(Q) * N_q)
     
     data = request.get_json()
     a0 = 1.0
@@ -57,10 +65,21 @@ def calculate():
         if p+1 >= n_p:
             break
     print(p)
-    data = np.zeros((p,3))
+    data = np.zeros((p,4))
     data[:,0] = x[0:p]
     data[:,1] = y[0:p]
     data[:,2] = z[0:p]
+
+    # Compute radial (r) and angular (q) coordinates for accepted points
+    r_points = np.sqrt(x[0:p]**2 + y[0:p]**2 + z[0:p]**2)
+    q_points = np.zeros_like(r_points)
+    nonzero = r_points != 0
+    q_points[nonzero] = np.arccos(z[0:p][nonzero] / r_points[nonzero])
+    
+    # Compute the modulus of ψ for each accepted point
+    psi_mod_values = psi_modulus(r_points, q_points, n, l, m)
+    data[:, 3] = psi_mod_values
+    
     return jsonify({'result': data.tolist()})
     #np.savetxt("orbital_{:d},{:d},{:d}_full.csv".format(n,l,m), data, delimiter=",")
     del rnd_x, rnd_y, rnd_z, rnd_M, x, y, z
