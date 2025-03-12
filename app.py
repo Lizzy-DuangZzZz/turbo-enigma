@@ -17,7 +17,7 @@ def calculate():
         return np.power(N_r*R*np.abs(Q)*N_q, 2.0)
     
     data = request.get_json()
-    a0 = data.get('a0')
+    a0 = 1.0
     n_a = data.get('n_a')
     N = data.get('N')
     n_p = data.get('n_p')
